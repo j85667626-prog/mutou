@@ -329,7 +329,7 @@ input {
 
 .painting-card,
 .story-banner {
-  position: relative;
+  /* position: relative; */
   border-radius: 24px;
   overflow: hidden;
   /* min-height: 720px; */
