@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>曲辕犁春耕小戏</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="progress-bar">
+      <div class="progress-track">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <div id="progressLabel" class="progress-label">卷轴初启</div>
+    </header>
+
+    <main class="phone-frame">
+      <section id="scene-opening" class="scene scene-active scene-opening">
+        <div class="opening-bg"></div>
+        <div class="opening-scroll">
+          <div class="opening-scroll-inner">
+            <img class="opening-title" src="./extracted_assets/pack_3/root/001_item.png" alt="游戏标题">
+            <p class="opening-copy">跟着画卷一起走进春耕时节，备种、浸种、制犁，完成一场温柔又热闹的田间冒险。</p>
+          </div>
+        </div>
+        <button id="openStoryBtn" class="brush-btn btn-large">展开画卷</button>
+      </section>
+
+      <section id="scene-role" class="scene scene-role">
+        <div class="scene-head">
+          <p class="scene-kicker">第一步</p>
+          <h1>选择你的角色</h1>
+          <p>点击人物查看放大预览，选定后进入春耕旅程。</p>
+        </div>
+        <div class="role-layout">
+          <div id="roleGrid" class="role-grid"></div>
+          <div class="role-preview-card">
+            <div class="role-preview-frame">
+              <img id="rolePreviewImage" src="./extracted_assets/pack_1/item/038_IMG_9245.png" alt="角色预览">
+            </div>
+            <div>
+              <h2 id="rolePreviewName">书生</h2>
+              <p id="rolePreviewText">懂农时，也懂故事，最适合替大家翻开这幅画卷。</p>
+            </div>
+            <button id="confirmRoleBtn" class="brush-btn">进入游戏</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-story1" class="scene story-scene">
+        <div class="painting-card">
+          <img class="painting-bg" src="./extracted_assets/pack_1/root/012_item.jpg" alt="春耕古画">
+          <img class="story-calligraphy" src="./extracted_assets/pack_3/item/007_01.jpg" alt="剧情文字">
+          <div class="story-panel">
+            <p>暖风吹醒田野，春耕正要开始。你需要先备好种子，才好迎接这一年的收成。</p>
+            <button id="toShopBtn" class="brush-btn">去采购种子</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-shop" class="scene scene-shop">
+        <div class="shop-hero">
+          <img class="shop-river" src="./extracted_assets/pack_1/root/008_item.png" alt="田间河道">
+          <div class="shop-copy">
+            <h1>种子商店</h1>
+            <p>老板说，答对一题就多送一袋种子。多一分准备，多一分丰收的把握。</p>
+            <div class="inventory-pill">
+              <span>当前种子</span>
+              <strong id="seedCount">1</strong>
+            </div>
+          </div>
+        </div>
+        <div class="shop-actions">
+          <div class="shop-card">
+            <img src="./extracted_assets/pack_1/root/005_item.png" alt="种子袋">
+            <p>基础种子已经备好一袋。</p>
+          </div>
+          <div class="shop-card">
+            <img src="./extracted_assets/pack_1/root/013_item.png" alt="奖励种子">
+            <p>答题成功可再领一袋奖励种子。</p>
+          </div>
+        </div>
+        <div class="scene-actions">
+          <button id="quizBtn" class="brush-btn">点我答题</button>
+          <button id="toSeedPageBtn" class="brush-btn secondary" disabled>查看奖励种子</button>
+        </div>
+        <div id="quizModal" class="modal hidden" aria-hidden="true">
+          <div class="modal-card">
+            <p class="scene-kicker">春耕小问答</p>
+            <h2>《我在画里种良田》的“画”最接近下面哪一幅？</h2>
+            <div class="quiz-options">
+              <button class="quiz-option" data-correct="true">《耕织图》</button>
+              <button class="quiz-option" data-correct="false">《游春图》</button>
+              <button class="quiz-option" data-correct="false">《春耕画轴》</button>
+              <button class="quiz-option" data-correct="false">《五牛图》</button>
+            </div>
+            <p id="quizFeedback" class="quiz-feedback"></p>
+            <button id="closeQuizBtn" class="brush-btn secondary">先收起题目</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-seed-show" class="scene scene-seed-show">
+        <div class="scene-head">
+          <p class="scene-kicker">第二步</p>
+          <h1>收下奖励种子</h1>
+          <p>这袋种子要先倒进竹筐，再进行浸泡，才算真正准备妥当。</p>
+        </div>
+        <div class="seed-showcase">
+          <img src="./extracted_assets/pack_2/root/007_item.png" alt="倒种子示意">
+        </div>
+        <div class="scene-actions">
+          <button id="toSoakBtn" class="brush-btn">倒入框中</button>
+        </div>
+      </section>
+
+      <section id="scene-soak" class="scene scene-soak">
+        <div class="scene-head">
+          <p class="scene-kicker">第三步</p>
+          <h1>浸种准备</h1>
+          <p>点击浸泡，竹筐会自动移入水边并完成约 3 秒读条。</p>
+        </div>
+        <div class="soak-stage">
+          <div class="soak-river-zone" id="riverZone">
+            <img src="./extracted_assets/pack_1/root/004_item.png" alt="河水">
+            <img class="soak-overlay-wood" src="./extracted_assets/pack_3/item/006_item.png" alt="文字展示">
+            <div class="zone-ring">浸泡区域</div>
+          </div>
+          <div class="soak-side auto-soak">
+            <div id="basket" class="draggable-basket auto-basket">
+              <img src="./extracted_assets/pack_1/root/002_item.png" alt="竹筐">
+            </div>
+          </div>
+        </div>
+        <div class="progress-panel">
+          <div class="progress-track large">
+            <div id="soakProgressFill" class="progress-fill"></div>
+          </div>
+          <p id="soakStatus">竹筐已经就位，点击开始浸泡。</p>
+        </div>
+        <div class="scene-actions">
+          <button id="startSoakBtn" class="brush-btn">浸泡</button>
+        </div>
+      </section>
+
+      <section id="scene-wood" class="scene scene-wood">
+        <div class="story-banner">
+          <img class="painting-bg" src="./extracted_assets/pack_1/root/013_item.jpg" alt="木材画面">
+          <!-- <img class="story-calligraphy small" src="./extracted_assets/pack_3/item/004_02.jpg" alt="剧情文字"> -->
+        </div>
+        <div class="story-panel between-panel">
+          <p>种子备齐后，就该为耕地准备一件真正的好工具了。挑对木材，才能做出稳当的曲辕犁。</p>
+        </div>
+        <div class="wood-grid">
+          <button class="wood-card" data-wood="light">
+            <img src="./extracted_assets/pack_1/root/011_item.png" alt="轻木">
+            <span>轻木</span>
+          </button>
+          <button class="wood-card" data-wood="dark">
+            <img src="./extracted_assets/pack_1/root/006_2.png" alt="硬木">
+            <span>硬木</span>
+          </button>
+        </div>
+        <div id="woodFeedback" class="hint-board">请选择更适合做农具的木材。</div>
+        <div class="scene-actions">
+          <button id="toSawBtn" class="brush-btn" hidden>开始制犁</button>
+        </div>
+      </section>
+
+      <section id="scene-saw" class="scene scene-saw">
+        <div class="scene-head">
+          <p class="scene-kicker">第四步</p>
+          <h1>锯开木头</h1>
+          <p>来回拖动锯子，把木头加工成适合拼装的部件。</p>
+        </div>
+        <div class="saw-stage">
+          <div class="saw-wood-wrap">
+            <img class="saw-wood" src="./extracted_assets/pack_1/root/006_2.png" alt="硬木">
+            <div class="saw-cut-line"></div>
+            <div id="sawdust" class="sawdust"></div>
+          </div>
+          <div id="sawTool" class="saw-tool">
+            <img src="./extracted_assets/pack_2/root/010_item.png" alt="锯子">
+          </div>
+        </div>
+        <div class="progress-panel">
+          <div class="progress-track large">
+            <div id="sawProgressFill" class="progress-fill"></div>
+          </div>
+          <p id="sawStatus">拖动锯子沿着虚线来回移动，完成开料。</p>
+        </div>
+        <div class="scene-actions">
+          <button id="toAssembleBtn" class="brush-btn" disabled>进入拼装</button>
+        </div>
+      </section>
+
+      <section id="scene-assemble" class="scene scene-assemble">
+        <div class="scene-head">
+          <p class="scene-kicker">第五步</p>
+          <h1>拼装曲辕犁</h1>
+          <p>先点选左边部件，再点右边对应区域完成拼装，不再需要拖拽。</p>
+        </div>
+        <div class="assemble-layout">
+          <div id="partsTray" class="parts-tray"></div>
+          <div class="assemble-board-wrap">
+            <div class="assemble-reference">
+              <img src="./extracted_assets/pack_1/item/017_item.png" alt="曲辕犁示意图">
+            </div>
+            <div id="assembleBoard" class="assemble-board">
+              <div class="drop-slot" data-part="beam" style="top: 44%; left: 5%; width: 77%; height: 24%;"></div>
+              <div class="drop-slot" data-part="curve" style="top: 21%; left: 60%; width: 39%; height: 50%;"></div>
+              <div class="drop-slot" data-part="hook" style="top: 61%; left: 7%; width: 11%; height: 17%;"></div>
+              <div class="drop-slot" data-part="base" style="top: 63%; left: 39%; width: 35%; height: 12%;"></div>
+              <div class="drop-slot" data-part="post" style="top: 26%; left: 43%; width: 14%; height: 48%;"></div>
+              <div class="drop-slot" data-part="peg" style="top: 35%; left: 50%; width: 11%; height: 11%;"></div>
+              <div class="drop-slot" data-part="share" style="top: 47%; left: 22%; width: 26%; height: 25%;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="progress-panel">
+          <div class="progress-track large">
+            <div id="assembleProgressFill" class="progress-fill"></div>
+          </div>
+          <p id="assembleStatus">还差 7 个部件，把它们都拼回去。</p>
+        </div>
+        <div id="assembleHint" class="hint-board">请先点选一个部件，再点右侧高亮区域放置。</div>
+        <div class="scene-actions">
+          <button id="toFinishBtn" class="brush-btn" disabled>完成曲辕犁</button>
+        </div>
+      </section>
+
+      <section id="scene-finish" class="scene scene-finish">
+        <div class="finish-card">
+          <div class="finish-glow"></div>
+          <img class="finish-plow" src="./extracted_assets/pack_2/root/005_b91471200fecc9264250352f60286e43.jpg" alt="曲辕犁成品">
+          <div class="finish-copy">
+            <p class="scene-kicker">完成啦</p>
+            <h1>你的曲辕犁做好啦</h1>
+            <p>种子醒了，木料也成器了。接下来，我们就能一起下田春耕。</p>
+          </div>
+          <button id="toEndingBtn" class="brush-btn">翻到下一页</button>
+        </div>
+      </section>
+
+      <section id="scene-ending" class="scene scene-ending">
+        <div class="ending-layout">
+          <div class="ending-preview">
+            <img src="./extracted_assets/pack_1/item/024_IMG_9355.png" alt="后续关卡">
+          </div>
+          <div class="ending-copy">
+            <p class="scene-kicker">章节收尾</p>
+            <h1>后续关卡尚未解锁</h1>
+            <p>这一卷先到这里，后面的耕地章节还在制作中，敬请期待下一次更新。</p>
+            <button id="restartAllBtn" class="brush-btn">重新体验</button>
+          </div>
+        </div>
+      </section>
+
+      <div id="woodModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-card wood-modal-card">
+          <p class="scene-kicker">招租告示</p>
+          <h2>硬木更适合做农具</h2>
+          <img class="wood-modal-image" src="./seed-wood-notice.jpg" alt="招租告示">
+          <p>硬木更结实耐磨，承重和抗拉都更合适，用来制作曲辕犁会更稳当。</p>
+          <div class="scene-actions">
+            <button id="woodModalStartBtn" class="brush-btn">开始制犁</button>
+            <button id="woodModalCloseBtn" class="brush-btn secondary">再看看</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <audio id="finishAudio" src="./extracted_assets/pack_1/item/123.mp3" preload="auto"></audio>
+  <script src="./script.js"></script>
+</body>
+</html>

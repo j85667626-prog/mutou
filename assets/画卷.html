@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三跃图古画卷轴</title>
+  <style>
+    :root {
+      --bg: #efe5d3;
+      --paper: #f8f1e2;
+      --ink: #4a3b2a;
+      --frame: #6a5743;
+      --shadow: rgba(0, 0, 0, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.45), transparent 42%),
+        linear-gradient(180deg, #f5ecdd 0%, #e8dcc5 100%);
+      color: var(--ink);
+      font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+      overflow-x: hidden;
+      padding: 28px 16px;
+    }
+
+    .stage {
+      position: relative;
+      box-shadow: 0 30px 80px var(--shadow);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid rgba(74, 59, 42, 0.15);
+    }
+
+    canvas {
+      display: block;
+      width: min(92vw, 600px);
+      height: auto;
+      background: var(--paper);
+    }
+
+    .intro-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      padding: 32px 24px;
+    }
+
+    .intro-overlay.ready {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .intro-stack {
+      width: min(88%, 460px);
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .intro-title {
+      width: min(80%, 250px);
+      filter: drop-shadow(0 12px 22px rgba(74, 59, 42, 0.22));
+    }
+
+    .intro-panel {
+      position: relative;
+      width: 100%;
+      filter: drop-shadow(0 14px 28px rgba(74, 59, 42, 0.18));
+    }
+
+    .intro-panel img {
+      width: 100%;
+      display: block;
+    }
+
+    .start-game-btn {
+      position: absolute;
+      left: 30px;
+      top: 35px;
+      border: 0;
+      background: transparent;
+      color: #6f4723;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-family: "STKaiti", "KaiTi", "DFKai-SB", serif;
+      text-shadow:
+        0 2px 0 rgba(255, 249, 236, 0.95),
+        0 8px 18px rgba(74, 59, 42, 0.18);
+      cursor: pointer;
+      padding: 10px 20px;
+      white-space: nowrap;
+    }
+
+    .start-game-btn:hover {
+      color: #8a592d;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(248, 241, 226, 0.7);
+      backdrop-filter: blur(2px);
+      color: rgba(74, 59, 42, 0.75);
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      z-index: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    .loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div id="loading" class="loading">正在准备画卷...</div>
+    <canvas id="paintingCanvas" width="600" height="900"></canvas>
+    <div id="introOverlay" class="intro-overlay">
+      <div class="intro-stack">
+        <img class="intro-title" src="../extracted_assets/pack_3/root/001_item.png" alt="游戏标题">
+        <div class="intro-panel">
+          <img src="../extracted_assets/pack_3/root/003_item.png" alt="提示卷轴">
+          <button id="startGameBtn" class="start-game-btn" type="button">开始游戏</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("paintingCanvas");
+    const ctx = canvas.getContext("2d");
+    const loadingEl = document.getElementById("loading");
+    const introOverlay = document.getElementById("introOverlay");
+    const startGameBtn = document.getElementById("startGameBtn");
+
+    const config = {
+      canvasWidth: 600,
+      canvasHeight: 900,
+      scrollWidth: 500,
+      rollerHeight: 35,
+      bgColor: "#efe5d3",
+      paperColor: "#f8f1e2",
+      borderColor: "#6a5743",
+      borderWidth: 15,
+      paddingY: 40,
+      imageOffsetY: 140,
+    };
+
+    const state = {
+      progress: 0,
+      targetProgress: 1,
+      isAnimating: false,
+      image: null,
+    };
+
+    const drawRoughLine = (context, x1, y1, x2, y2, color = "#4a3b2a", lineWidth = 2) => {
+      const length = Math.hypot(x2 - x1, y2 - y1) || 1;
+      const segments = Math.max(10, Math.floor(length / 5));
+
+      context.beginPath();
+      context.moveTo(x1, y1);
+
+      for (let i = 1; i <= segments; i++) {
+        const t = i / segments;
+        const x = x1 + (x2 - x1) * t;
+        const y = y1 + (y2 - y1) * t;
+        const perpX = -(y2 - y1) / length;
+        const perpY = (x2 - x1) / length;
+        const noiseFactor = Math.sin(t * Math.PI) * (Math.random() - 0.5) * 3;
+        context.lineTo(x + perpX * noiseFactor, y + perpY * noiseFactor);
+      }
+
+      context.strokeStyle = color;
+      context.lineWidth = lineWidth;
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.stroke();
+    };
+
+    const drawRoller = (context, x, y, width, height, isTop) => {
+      const gradient = context.createLinearGradient(x, y, x, y + height);
+      gradient.addColorStop(0, "#5e4b3a");
+      gradient.addColorStop(0.4, "#8c735a");
+      gradient.addColorStop(1, "#4a3b2a");
+
+      context.fillStyle = gradient;
+      context.beginPath();
+      if (typeof context.roundRect === "function") {
+        context.roundRect(x, y, width, height, height / 3);
+      } else {
+        context.rect(x, y, width, height);
+      }
+      context.fill();
+
+      drawRoughLine(context, x + 10, y + 5, x + 10, y + height - 5, "#3a2b1a", 1.5);
+      drawRoughLine(context, x + width - 10, y + 5, x + width - 10, y + height - 5, "#3a2b1a", 1.5);
+
+      if (isTop) {
+        drawRoughLine(context, x + 2, y + height - 2, x + width - 2, y + height - 2, "#2a1b0a", 2);
+      } else {
+        drawRoughLine(context, x + 2, y + 2, x + width - 2, y + 2, "#2a1b0a", 2);
+      }
+    };
+
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    function createFallbackImage() {
+      const fallbackCanvas = document.createElement("canvas");
+      fallbackCanvas.width = 1200;
+      fallbackCanvas.height = 1800;
+      const fallbackCtx = fallbackCanvas.getContext("2d");
+
+      const sky = fallbackCtx.createLinearGradient(0, 0, 0, fallbackCanvas.height);
+      sky.addColorStop(0, "#e7d9bf");
+      sky.addColorStop(1, "#c7ad82");
+      fallbackCtx.fillStyle = sky;
+      fallbackCtx.fillRect(0, 0, fallbackCanvas.width, fallbackCanvas.height);
+
+      fallbackCtx.fillStyle = "rgba(255,255,255,0.16)";
+      for (let i = 0; i < 240; i++) {
+        fallbackCtx.beginPath();
+        fallbackCtx.arc(Math.random() * fallbackCanvas.width, Math.random() * 900, 2 + Math.random() * 10, 0, Math.PI * 2);
+        fallbackCtx.fill();
+      }
+
+      fallbackCtx.fillStyle = "#8b6a49";
+      fallbackCtx.beginPath();
+      fallbackCtx.moveTo(0, 1320);
+      fallbackCtx.bezierCurveTo(260, 1100, 440, 1140, 600, 1280);
+      fallbackCtx.bezierCurveTo(760, 1400, 920, 1220, 1200, 1360);
+      fallbackCtx.lineTo(1200, 1800);
+      fallbackCtx.lineTo(0, 1800);
+      fallbackCtx.closePath();
+      fallbackCtx.fill();
+
+      fallbackCtx.fillStyle = "#6f5136";
+      fallbackCtx.beginPath();
+      fallbackCtx.moveTo(0, 1180);
+      fallbackCtx.bezierCurveTo(180, 980, 310, 1010, 470, 1140);
+      fallbackCtx.bezierCurveTo(560, 1210, 710, 1110, 900, 1190);
+      fallbackCtx.bezierCurveTo(1020, 1240, 1100, 1200, 1200, 1280);
+      fallbackCtx.lineTo(1200, 1800);
+      fallbackCtx.lineTo(0, 1800);
+      fallbackCtx.closePath();
+      fallbackCtx.fill();
+
+      fallbackCtx.fillStyle = "#e8cf94";
+      fallbackCtx.beginPath();
+      fallbackCtx.arc(910, 330, 135, 0, Math.PI * 2);
+      fallbackCtx.fill();
+
+      fallbackCtx.strokeStyle = "#553d27";
+      fallbackCtx.lineWidth = 18;
+      fallbackCtx.lineCap = "round";
+      fallbackCtx.beginPath();
+      fallbackCtx.moveTo(170, 1010);
+      fallbackCtx.lineTo(260, 880);
+      fallbackCtx.lineTo(320, 1030);
+      fallbackCtx.lineTo(410, 860);
+      fallbackCtx.lineTo(510, 1080);
+      fallbackCtx.lineTo(630, 900);
+      fallbackCtx.lineTo(735, 1100);
+      fallbackCtx.lineTo(845, 940);
+      fallbackCtx.stroke();
+
+      const img = new Image();
+      img.src = fallbackCanvas.toDataURL("image/png");
+      return img;
+    }
+
+    function loadImage() {
+      const candidates = [
+        "../extracted_assets/pack_1/root/012_item.jpg",
+        "./【耕图】13三跃.jpg",
+        "./13三跃.jpg",
+        "./画卷.jpg",
+        "./画作.jpg",
+        "./image.jpg",
+      ];
+
+      return new Promise((resolve) => {
+        let index = 0;
+
+        const tryNext = () => {
+          if (index >= candidates.length) {
+            resolve(createFallbackImage());
+            return;
+          }
+
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => {
+            index += 1;
+            tryNext();
+          };
+          img.src = candidates[index];
+        };
+
+        tryNext();
+      });
+    }
+
+    function render() {
+      if (state.isAnimating) {
+        state.progress = Math.min(state.targetProgress, state.progress + 0.008);
+        if (state.progress >= state.targetProgress) {
+          state.isAnimating = false;
+          introOverlay.classList.add("ready");
+        }
+      }
+
+      const easedProgress = easeOutCubic(state.progress);
+      ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
+      ctx.fillStyle = config.bgColor;
+      ctx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
+
+      const scrollX = (config.canvasWidth - config.scrollWidth) / 2;
+      const topRollerY = config.paddingY;
+      const maxContentHeight = config.canvasHeight - config.paddingY * 2 - config.rollerHeight * 2;
+      const currentContentHeight = maxContentHeight * easedProgress;
+      const bottomRollerY = topRollerY + config.rollerHeight + currentContentHeight;
+
+      ctx.save();
+
+      if (currentContentHeight > 0) {
+        ctx.fillStyle = config.borderColor;
+        ctx.fillRect(scrollX, topRollerY + config.rollerHeight - 2, config.scrollWidth, currentContentHeight + 4);
+
+        ctx.fillStyle = config.paperColor;
+        const paperX = scrollX + config.borderWidth;
+        const paperWidth = config.scrollWidth - config.borderWidth * 2;
+        ctx.fillRect(paperX, topRollerY + config.rollerHeight, paperWidth, currentContentHeight);
+
+        drawRoughLine(ctx, scrollX, topRollerY + config.rollerHeight, scrollX, bottomRollerY, "#3a2b1a", 2);
+        drawRoughLine(ctx, scrollX + config.scrollWidth, topRollerY + config.rollerHeight, scrollX + config.scrollWidth, bottomRollerY, "#3a2b1a", 2);
+      }
+
+      if (currentContentHeight > 0 && state.image) {
+        ctx.beginPath();
+        ctx.rect(
+          scrollX + config.borderWidth,
+          topRollerY + config.rollerHeight,
+          config.scrollWidth - config.borderWidth * 2,
+          currentContentHeight
+        );
+        ctx.clip();
+
+        const scale = (config.scrollWidth - config.borderWidth * 2) / state.image.width;
+        const scaledHeight = state.image.height * scale;
+        const subtleParallax = (1 - easedProgress) * 20;
+
+        ctx.drawImage(
+          state.image,
+          scrollX + config.borderWidth,
+          topRollerY + config.rollerHeight + config.imageOffsetY - subtleParallax,
+          config.scrollWidth - config.borderWidth * 2,
+          scaledHeight
+        );
+      }
+
+      ctx.restore();
+
+      drawRoller(ctx, scrollX - 10, topRollerY, config.scrollWidth + 20, config.rollerHeight, true);
+
+      if (state.progress > 0.01) {
+        drawRoller(ctx, scrollX - 10, bottomRollerY, config.scrollWidth + 20, config.rollerHeight, false);
+      }
+
+      ctx.fillStyle = "rgba(100, 90, 70, 0.08)";
+      for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * config.canvasWidth;
+        const y = Math.random() * config.canvasHeight;
+        ctx.fillRect(x, y, 1, 1);
+      }
+
+      if (state.isAnimating || state.progress < 1) {
+        requestAnimationFrame(render);
+      }
+    }
+
+    function startAnimation() {
+      state.progress = 0;
+      state.isAnimating = true;
+      render();
+    }
+
+    (async () => {
+      state.image = await loadImage();
+      loadingEl.classList.add("hidden");
+      startAnimation();
+    })().catch(() => {
+      state.image = createFallbackImage();
+      loadingEl.classList.add("hidden");
+      startAnimation();
+    });
+
+    startGameBtn.addEventListener("click", () => {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "enter-app" }, "*");
+      }
+    });
+  </script>
+</body>
+</html>
