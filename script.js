@@ -30,8 +30,8 @@ const appState = {
 const roleData = [
   { name: "书生", image: "./extracted_assets/pack_1/item/038_IMG_9245.png", text: "懂农时，也懂故事，最适合替大家翻开这幅画卷。" },
   { name: "慈长者", image: "./extracted_assets/pack_1/item/039_IMG_9244.png", text: "稳稳当当，像经验丰富的乡里长辈，总能给你一句关键提醒。" },
-  { name: "行脚客", image: "./extracted_assets/pack_1/item/040_IMG_9246.png", text: "挑着担子走南闯北，最知道哪里能寻到好材料。" },
-  { name: "卖花娘", image: "./extracted_assets/pack_1/item/041_IMG_9247.png", text: "手脚麻利，眼神也好，选种子和挑木头都很有一套。" },
+  { name: "行脚客", image: "./extracted_assets/pack_1/item/041_IMG_9247.png", text: "挑着担子走南闯北，最知道哪里能寻到好材料。" },
+  { name: "卖花娘", image: "./extracted_assets/pack_1/item/040_IMG_9246.png", text: "手脚麻利，眼神也好，选种子和挑木头都很有一套。" },
   { name: "采花女", image: "./extracted_assets/pack_1/item/042_IMG_9243.png", text: "心细又温柔，做起准备工作来总能把每一步都安排妥帖。" },
   { name: "田间少年", image: "./extracted_assets/pack_1/item/043_IMG_9242.png", text: "跑得快，胆子也大，最适合替大家去试试新的办法。" },
   { name: "小掌事", image: "./extracted_assets/pack_1/item/044_IMG_9241.png", text: "做事利落，说选谁就选谁，进了田里就是可靠搭子。" },
